@@ -9,7 +9,7 @@ import {
 const router: Router = Router();
 
 // Public routes
-router.post('/register', (req, res, next) => {
+router.post('/register', (req: any, res: any, next: any) => {
   if (process.env.ALLOW_SIGNUP !== "true") {
     return res.status(403).json({ message: "Signups disabled" });
   }

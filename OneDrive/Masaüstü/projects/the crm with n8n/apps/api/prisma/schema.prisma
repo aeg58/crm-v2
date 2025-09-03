@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Customer {
+  id        String         @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  company   String?
+  source    CustomerSource
+  status    CustomerStatus @default(ACTIVE)
+  tags      String[]
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // Relations
+  messages Message[]
+  leads    Lead[]
+
+  @@map("customers")
+}
+
+model Message {
+  id         String        @id @default(cuid())
+  customerId String
+  content    String
+  direction  MessageDirection
+  platform   MessagePlatform
+  sentiment  Sentiment?
+  leadScore  Int?
+  intent     String?
+  tags       String[]
+  metadata   Json?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  // Relations
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Lead {
+  id         String     @id @default(cuid())
+  customerId String
+  score      Int        @default(0)
+  status     LeadStatus @default(NEW)
+  source     String
+  notes      String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // Relations
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("leads")
+}
+
+// Enums
+enum Role {
+  ADMIN
+  USER
+}
+
+enum CustomerSource {
+  WHATSAPP
+  INSTAGRAM
+  MANUAL
+  OTHER
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessagePlatform {
+  WHATSAPP
+  INSTAGRAM
+  MANUAL
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
